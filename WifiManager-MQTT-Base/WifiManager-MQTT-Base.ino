@@ -12,6 +12,19 @@
 //MQTT 
 #include <PubSubClient.h>
 
+//mosit
+int moistPin = A0;
+String moist_str;
+char moist[50];
+
+//temp
+#include <dht.h>
+dht DHT;
+#define DHT11_PIN 2
+
+String temp_str;
+char temp[50];
+
 const char* mqtt_server = "mqtt.dioty.co";
 
 WiFiClient espClient;
@@ -65,6 +78,9 @@ void reconnect() {
 }
 
 void setup() {
+
+    //moist
+    //pinMode(inPin, INPUT);
     // put your setup code here, to run once:
     Serial.begin(115200);
 
@@ -98,6 +114,19 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+
+  int sensorValue = analogRead(moistPin);
+//  String stringOne = "Sensor value: ";
+//  String moistMessage = stringOne + sensorValue;
+  //moist
+  Serial.println(sensorValue);
+  moist_str = String(sensorValue); //converting ftemp (the float variable above) to a string
+  moist_str.toCharArray(moist, moist_str.length() + 1);
+  
+  //temp
+  int chk = DHT.read11(DHT11_PIN);
+  temp_str = String(DHT.temperature); //converting ftemp (the float variable above) to a string
+  temp_str.toCharArray(temp, temp_str.length() + 1);
   
   if (!client.connected()) {
     reconnect();
@@ -108,9 +137,10 @@ void loop() {
   if (now - lastMsg > 2000) {
     lastMsg = now;
     ++value;
-    snprintf (msg, 50, "hello world #%ld", value);
+    //snprintf (msg, 50, "hello", value);
     Serial.print("Publish message: ");
     Serial.println(msg);
-    client.publish("/klovakarlsson@gmail.com/hej", msg);
+    client.publish("/klovakarlsson@gmail.com/temp", temp);
+    client.publish("/klovakarlsson@gmail.com/moist", moist);
   }
 }
